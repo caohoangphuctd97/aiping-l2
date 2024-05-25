@@ -8,8 +8,13 @@ logger = logging.getLogger("__main__")
 
 
 async def make_request_with_retries(
-    method: str, url: str, headers: dict, params: dict = None,
-    data: dict = None, retries: int = 5, timeout: int = 30
+    method: str,
+    url: str,
+    headers: dict,
+    params: dict = None,
+    data: dict = None,
+    retries: int = 5,
+    timeout: int = 30,
 ):
     """
     Make an HTTP request with retries.
@@ -54,9 +59,7 @@ async def make_request_with_retries(
                     f"Request failed with status code {response.status_code}"
                     f" and contain: {response.text}"
                 )
-        except (
-            requests.exceptions.RequestException, requests.exceptions.Timeout
-        ) as e:
+        except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
             logger.error(
                 f"Request failed: {e}. Retrying... "
                 f"(Attempt {attempt + 1}/{retries})"
@@ -84,16 +87,13 @@ async def render_payload_for_travel_recommendation(
     return {
         "model": config.OPENAI_MODEL,
         "messages": [
-            {
-                "role": "system",
-                "content": "You are an expert travel advisor."
-            },
+            {"role": "system", "content": "You are an expert travel advisor."},
             {
                 "role": "user",
                 "content": (
                     "Can you recommend some travel destinations in "
                     f"{data.country} during the {data.season}?"
-                )
+                ),
             },
             {
                 "role": "user",
@@ -106,8 +106,8 @@ async def render_payload_for_travel_recommendation(
                         "Visit the Quebec Winter Carnival."
                     ]
                     """
-                )
-            }
+                ),
+            },
         ],
-        **kwargs
+        **kwargs,
     }

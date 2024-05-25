@@ -1,1 +1,1 @@
-from . import travel   # noqa: F401
+from . import travel  # noqa: F401

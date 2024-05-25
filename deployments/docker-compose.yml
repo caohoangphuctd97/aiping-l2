@@ -2,12 +2,12 @@ version: '3.5'
 
 services:
   fastapi:
-    container_name: fastapi_container
+    container_name: aipiping
     build:
       context: ..
       dockerfile: deployments/Dockerfile
     ports:
       - "3000:3000"
-    env_file:
-      - ../.env
+    environment:
+      - OPENAI_API_KEY
     restart: unless-stopped

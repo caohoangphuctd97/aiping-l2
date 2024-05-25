@@ -9,8 +9,8 @@ ENV POETRY_NO_INTERACTION=1
 RUN pip install poetry
 
 COPY app ./app
+COPY ./poetry.lock .
 COPY ./pyproject.toml .
-COPY ./gunicorn.conf.py .
 
 RUN poetry install --only main --no-root --no-interaction --no-ansi \
   && rm -rf "./.cache"

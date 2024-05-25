@@ -21,5 +21,3 @@ configure_middlewares(app)
 
 # Configure routes and add dependencies
 configure_routes(app)
-
-
