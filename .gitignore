@@ -1,0 +1,6 @@
+*.txt
+.env
+.venv
+**/__pycache__/
+**/assets/
+.vscode/

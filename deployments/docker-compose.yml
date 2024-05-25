@@ -1,0 +1,13 @@
+version: '3.5'
+
+services:
+  fastapi:
+    container_name: fastapi_container
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../.env
+    restart: unless-stopped
