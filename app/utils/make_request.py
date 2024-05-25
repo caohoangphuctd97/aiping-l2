@@ -1,6 +1,8 @@
 import requests
 import logging
 from app.config import config
+from app.exceptions.configure_exceptions import ServerErrorException
+from app.schemas import TravelRecommendationReq
 
 logger = logging.getLogger("__main__")
 
@@ -9,6 +11,25 @@ async def make_request_with_retries(
     method: str, url: str, headers: dict, params: dict = None,
     data: dict = None, retries: int = 5, timeout: int = 30
 ):
+    """
+    Make an HTTP request with retries.
+
+    Args:
+        method (str): HTTP method (e.g., 'GET', 'POST').
+        url (str): The URL to send the request to.
+        headers (dict): HTTP headers to include in the request.
+        params (dict, optional): URL parameters to include in the request. Defaults to None.
+        data (dict, optional): JSON data to include in the request body. Defaults to None.
+        retries (int, optional): Number of retry attempts. Defaults to 5.
+        timeout (int, optional): Timeout for the request in seconds. Defaults to 30.
+
+    Returns:
+        tuple: A tuple containing the JSON response and the status code.
+
+    Raises:
+        ServerErrorException: If the request fails after all retry attempts.
+    """
+
     for attempt in range(retries):
         try:
             response = requests.request(
@@ -22,12 +43,17 @@ async def make_request_with_retries(
             if response.status_code == 200:
                 response_json = response.json()
                 return response_json, response.status_code
-            else:
+            elif response.status_code in [502, 503, 429]:
                 logger.warning(
                     f"Request failed with status code {response.status_code}."
                     f"Retrying... (Attempt {attempt + 1}/{retries})"
                 )
                 logger.warning(f"Response content: {response.text}")
+            else:
+                raise ServerErrorException(
+                    f"Request failed with status code {response.status_code}"
+                    f" and contain: {response.text}"
+                )
         except (
             requests.exceptions.RequestException, requests.exceptions.Timeout
         ) as e:
@@ -36,39 +62,52 @@ async def make_request_with_retries(
                 f"(Attempt {attempt + 1}/{retries})"
             )
 
-    logger.error(f"Request failed after {retries} attempts.")
-    return response.json(), response.status_code
+    raise ServerErrorException(
+        f"Request failed with status code {response.status_code}"
+        f" and contain: {response.text}"
+    )
 
 
-def post_stream(url: str, headers: dict, data: dict = None):
-    s = requests.Session()
-    chunks = []
-    token_info = None
-    with s.post(
-        url, json=data, headers=headers, stream=True,
-        proxies={"http": config.PROXY_URL, "https": config.PROXY_URL}
-    ) as resp:
-        for line in resp.iter_content():
-            if line:
-                chunks.append(line)
+async def render_payload_for_travel_recommendation(
+    data: TravelRecommendationReq, **kwargs
+) -> dict:
+    """
+    Render the payload for the travel recommendation request.
 
-    pending = None
-    for chunk in chunks:
-        if pending is not None:
-            chunk = pending + chunk
-        lines = chunk.splitlines()
+    Args:
+        data (TravelRecommendationReq): The request data containing country and season.
+        **kwargs: Additional keyword arguments for the OpenAI API.
 
-        if lines and lines[-1] and chunk and lines[-1][-1] == chunk[-1]:
-            pending = lines.pop()
-        else:
-            pending = None
-        if len(lines) != 0:
-            token_chunk = lines[0].decode("utf-8")
-            if "completion_tokens" in token_chunk:
-                token_info = lines[0].decode("utf-8")[6:]
-    return chunks, token_info
-
-
-def data_generator(response: str):
-    for chunk in response:
-        yield "{}".format(chunk.decode('utf-8'))
+    Returns:
+        dict: The payload to be sent in the request.
+    """
+    return {
+        "model": config.OPENAI_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an expert travel advisor."
+            },
+            {
+                "role": "user",
+                "content": (
+                    "Can you recommend some travel destinations in "
+                    f"{data.country} during the {data.season}?"
+                )
+            },
+            {
+                "role": "user",
+                "content": (
+                    """
+                    return data to list in python like this
+                    [
+                        "Go skiing in Whistler.",
+                        "Experience the Northern Lights in Yukon.",
+                        "Visit the Quebec Winter Carnival."
+                    ]
+                    """
+                )
+            }
+        ],
+        **kwargs
+    }

@@ -20,7 +20,6 @@ class Config(BaseSettings):
 
     @property
     def OPENAPI_PREFIX(self):
-        print(f"/{self.API_PREFIX}/{self.API_VERSION}")
         return f"/{self.API_PREFIX}/{self.API_VERSION}"
 
 

@@ -1,10 +1,8 @@
 from fastapi import APIRouter, status
-from starlette.responses import JSONResponse
 from app.schemas import TravelRecommendationReq, TravelRecommendationRes
-from app.utils.make_request import make_request_with_retries
+from app.controllers.travel import get_travel_recommendations
 
 import logging
-import json
 
 
 router = APIRouter(prefix="", tags=["travel"])
@@ -18,4 +16,6 @@ logger = logging.getLogger("__main__")
 async def chat_completions(
     data: TravelRecommendationReq
 ):
-    return JSONResponse(content={})
+    res = await get_travel_recommendations(data)
+    logger.info(res)
+    return res
