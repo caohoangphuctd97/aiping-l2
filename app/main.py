@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from .config import config
-from .exceptions.handle_exceptions import configure_exceptions_handlers
-from .middlewares import configure_middlewares
-
+from app.config import config
+from app.exceptions.handle_exceptions import configure_exceptions_handlers
+from app.middlewares import configure_middlewares
 from app.apis import configure_routes
+from app.configure_logging import configure_logging
 
 
 # Create instance of application
@@ -18,6 +18,7 @@ app = FastAPI(
 # Update and set up configs
 configure_exceptions_handlers(app)
 configure_middlewares(app)
+configure_logging(config.LOG_LEVEL)
 
 # Configure routes and add dependencies
 configure_routes(app)

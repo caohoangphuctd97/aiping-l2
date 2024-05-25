@@ -8,7 +8,7 @@ DEFAULT_API_VERSION = "v1"
 class Config(BaseSettings):
     APPLICATION_NAME: str = "AIPIPING L2 API"
     DESCRIPTION: str = "AIPIPING L2 API"
-
+    LOG_LEVEL: str = "INFO"
     ENVIRONMENT: Literal["dev", "qa", "prod"] = "dev"
 
     API_VERSION: str = DEFAULT_API_VERSION

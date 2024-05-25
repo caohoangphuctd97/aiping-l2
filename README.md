@@ -7,6 +7,10 @@ AIPIPING L2 is a FastAPI-based application that provides travel recommendations 
 ## Project Structure
 - `app/main.py`: FastAPI application setup.
 - `app/utils/make_request.py`: Utility functions for making HTTP requests.
+- `app/exceptions/handle_exceptions.py`: Exception handlers configuration.
+- `app/middlewares`: Middleware configurations.
+- `app/apis`: API routes configuration.
+- `app/controllers`: Controller logic for handling requests.
 - `pyproject.toml`: Project dependencies and settings.
 - `deployments/Dockerfile`: Docker configuration.
 
@@ -58,5 +62,6 @@ docker-compose -f deployments/docker-compose.yml up -d
 
 ### Running unittest
 ```bash
+export OPENAI_API_KEY=API_KEY
 pytest tests
 ```
